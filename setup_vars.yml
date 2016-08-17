@@ -29,33 +29,34 @@
         primary: yes
       }
 
+# https://docs.mongodb.com/v3.0/core/sharded-cluster-config-servers/
 
+# A production sharded cluster has exactly three config servers.
+# All config servers must be available to deploy a sharded cluster or to make any changes to cluster metadata.
+# Config servers do not run as replica sets.
+
+# http interface:  48107, 48207, 48307
 
   config_members:
     - {
         rs_id: 0,
         replSetName: "{{mongo_replset_base_name}}",
         clusterRole: configsvr,
-        port: 57107  # 37<replSet#X><replSetMember#rs_id>7
+        port: 47107  # 37<replSet#X><replSetMember#rs_id>7
       }
     - {
         rs_id: 1,
         replSetName: "{{mongo_replset_base_name}}",
         clusterRole: configsvr,
-        port: 57207
+        port: 47207
       }
     - {
         rs_id: 2,
         replSetName: "{{mongo_replset_base_name}}",
         clusterRole: configsvr,
-        port: 57307
+        port: 47307
       }
-    - {
-        rs_id: 3,
-        replSetName: "{{mongo_replset_base_name}}",
-        clusterRole: configsvr,
-        port: 57407
-      }
+
 
 
   router_members:

@@ -1,5 +1,11 @@
 # mongod.conf
 
+net:
+   http:
+      enabled: true
+      JSONPEnabled: true
+      RESTInterfaceEnabled: true
+
 # for documentation of all options, see:
 #   http://docs.mongodb.org/manual/reference/configuration-options/
 
@@ -21,7 +27,7 @@ systemLog:
 # network interfaces
 net:
   port: {{item.port}}
-  bindIp: {{item.bindIp | default('0.0.0.0')}}, 127.0.0.1
+  bindIp: [{{item.bindIp | default('0.0.0.0')}}, 127.0.0.1]
 
 
 #processManagement:
@@ -34,7 +40,7 @@ net:
 #  replSetName: {{item.replSetName}}
 
 sharding:
-  configDB: {{item.replSetName}}/{% for server in item.configDB %}{{server.ip | default('127.0.0.1')}}:{{server.port}}{% if not loop.last %},{% endif %}{% endfor %}
+  configDB: {{item.replSetName}}/{% for server in item.configDB %}{{server.ip | default(box_address)}}:{{server.port}}{% if not loop.last %},{% endif %}{% endfor %}
 
 ## Enterprise-Only Options:
 

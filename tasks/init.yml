@@ -1,4 +1,12 @@
 ---
+
+  - name: Purge directories
+    file: path="{{item}}" state="absent"
+    with_items:
+      - "{{mongo_config_base_path}}"
+      - "{{mongo_db_base_path}}"
+      - "{{mongo_log_base_path}}"
+
   - name: Create directories
     file: path="{{item}}" state="directory"
     with_items:
@@ -33,4 +41,4 @@
     when: item.clusterRole == "router"
 
   - name: Template reset script
-    template: src="{{playbook_dir}}/templates/shell/init_script.sh.j2" dest="{{setup_root_path}}/mongo_init_script.sh" mode="u=rwx,g=rx,o=r"  
+    template: src="{{playbook_dir}}/templates/shell/init_script.sh.j2" dest="{{setup_root_path}}/mongo_init_script.sh" mode="u=rwx,g=rx,o=r"

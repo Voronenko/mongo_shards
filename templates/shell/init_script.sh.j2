@@ -12,11 +12,19 @@ echo "removing data files"
 # For mac make sure rlimits are high enough to open all necessary connections
 ulimit -n 2048
 
+# start config servers
+{% for server in config_members %}
+mkdir -p {{mongo_db_base_path}}/{{server.replSetName}}/{{server.clusterRole}}_{{server.rs_id | default(0)}}
+mongod --config {{mongo_config_base_path}}/mongo_{{server.replSetName}}_{{server.rs_id | default(0)}}_config.conf --fork
+{% endfor %}
+
 # start data shards
 {% for server in data_members %}
 mkdir -p {{mongo_db_base_path}}/{{server.replSetName}}/{{server.clusterRole}}_{{server.rs_id | default(0)}}
-mongod --config {{mongo_config_base_path}}/mongo_{{server.replSetName}}_{{server.rs_id | default(0)}}_shard.conf
+mongod --config {{mongo_config_base_path}}/mongo_{{server.replSetName}}_{{server.rs_id | default(0)}}_shard.conf --fork
 {% endfor %}
+
+exit
 
 sleep 5
 # connect to one server and initiate the set
@@ -36,14 +44,6 @@ rs.initiate(config)
 EOF
 {% endif %}
 {% endfor %}
-
-
-# start config servers
-{% for server in config_members %}
-mkdir -p {{mongo_db_base_path}}/{{server.replSetName}}/{{server.clusterRole}}_{{server.rs_id | default(0)}}
-mongod --config {{mongo_config_base_path}}/mongo_{{server.replSetName}}_{{server.rs_id | default(0)}}_config.conf
-{% endfor %}
-
 
 
 # start router servers

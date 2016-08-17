@@ -1,5 +1,11 @@
 # mongod.conf
 
+net:
+   http:
+      enabled: true
+      JSONPEnabled: true
+      RESTInterfaceEnabled: true
+
 # for documentation of all options, see:
 #   http://docs.mongodb.org/manual/reference/configuration-options/
 
@@ -9,7 +15,8 @@ storage:
   journal:
     enabled: true
 #  engine:
-#  mmapv1:
+  mmapv1:
+     smallFiles: true
 #  wiredTiger:
 
 # where to write logging data.
@@ -21,7 +28,7 @@ systemLog:
 # network interfaces
 net:
   port: {{item.port}}
-  bindIp: {{item.bindIp | default('0.0.0.0')}}, 127.0.0.1
+  bindIp: [{{item.bindIp | default('0.0.0.0')}}, 127.0.0.1]
 
 
 #processManagement:
@@ -30,8 +37,8 @@ net:
 
 #operationProfiling:
 
-replication:
-  replSetName: {{item.replSetName}}
+#replication:
+#  replSetName: {{item.replSetName}}
 
 {% if item.clusterRole == "configsvr" %}
 sharding:
