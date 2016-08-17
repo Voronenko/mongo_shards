@@ -1,0 +1,21 @@
+---
+- hosts: lamp_bootstrap
+
+  vars:
+    - root_dir: "{{playbook_dir}}"
+    - setup_root_path: "/home/{{ansible_user_id}}"
+    - mongo_config_base_path: "{{setup_root_path}}/config"
+    - mongo_db_base_path: "{{setup_root_path}}/db"
+    - mongo_log_base_path: "{{setup_root_path}}/log"
+    - option_test_run: true
+    - mongo_replset_base_name: alshard
+
+  vars_files:
+    - setup_vars.yml
+
+  pre_tasks:
+    - debug: msg="Pre tasks section"
+
+  tasks:
+    - debug: msg="Tasks section"
+    - include: tasks/init.yml

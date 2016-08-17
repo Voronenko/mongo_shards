@@ -1,0 +1,36 @@
+---
+  - name: Create directories
+    file: path="{{item}}" state="directory"
+    with_items:
+      - "{{mongo_config_base_path}}"
+      - "{{mongo_db_base_path}}"
+      - "{{mongo_log_base_path}}"
+
+  - name: Ensure db folders for data_members are present
+    file: path="{{mongo_db_base_path}}/{{item.replSetName}}/{{item.clusterRole}}_{{item.rs_id | default(0)}}" state="directory"
+    with_items: "{{data_members}}"
+
+
+  - name: Ensure db folders for config_members are present
+    file: path="{{mongo_db_base_path}}/{{item.replSetName}}/{{item.clusterRole}}_{{item.rs_id | default(0)}}" state="directory"
+    with_items: "{{config_members}}"
+
+
+  - name: Generate configs for data members
+    template: src="{{playbook_dir}}/templates/mongo/mongo_shardsvr.conf.j2" dest="{{mongo_config_base_path}}/mongo_{{item.replSetName}}_{{item.rs_id | default(0)}}_shard.conf"
+    with_items: "{{data_members}}"
+    when: item.clusterRole == "shardsvr"
+
+  - name: Generate configs for config members
+    template: src="{{playbook_dir}}/templates/mongo/mongo_configsvr.conf.j2" dest="{{mongo_config_base_path}}/mongo_{{item.replSetName}}_{{item.rs_id | default(0)}}_config.conf"
+    with_items: "{{config_members}}"
+    when: item.clusterRole == "configsvr"
+
+
+  - name: Generate configs for mongos members
+    template: src="{{playbook_dir}}/templates/mongo/mongos.conf.j2" dest="{{mongo_config_base_path}}/mongo_{{item.replSetName}}_{{item.rs_id | default(0)}}_router.conf"
+    with_items: "{{router_members}}"
+    when: item.clusterRole == "router"
+
+  - name: Template reset script
+    template: src="{{playbook_dir}}/templates/shell/init_script.sh.j2" dest="{{setup_root_path}}/mongo_init_script.sh" mode="u=rwx,g=rx,o=r"  
