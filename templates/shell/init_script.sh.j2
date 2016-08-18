@@ -5,6 +5,10 @@ set -e
 echo "killing mongod and mongos"
 killall mongod || true
 killall mongos || true
+
+# take time to shutdown ports
+sleep 4
+
 echo "removing data files"
 # rm -rf {{mongo_db_base_path}}
 # rm -rf {{mongo_log_base_path}}
@@ -12,30 +16,37 @@ echo "removing data files"
 # For mac make sure rlimits are high enough to open all necessary connections
 ulimit -n 2048
 
-# start config servers
-{% for server in config_members %}
-mkdir -p {{mongo_db_base_path}}/{{server.replSetName}}/{{server.clusterRole}}_{{server.rs_id | default(0)}}
-mongod --config {{mongo_config_base_path}}/mongo_{{server.replSetName}}_{{server.rs_id | default(0)}}_config.conf --fork
-{% endfor %}
 
 # start data shards
 {% for server in data_members %}
+rm -rf {{mongo_db_base_path}}/{{server.replSetName}}/{{server.clusterRole}}_{{server.rs_id | default(0)}} || true
 mkdir -p {{mongo_db_base_path}}/{{server.replSetName}}/{{server.clusterRole}}_{{server.rs_id | default(0)}}
+echo "{{server.port}}"
 mongod --config {{mongo_config_base_path}}/mongo_{{server.replSetName}}_{{server.rs_id | default(0)}}_shard.conf --fork
+sleep 1
 {% endfor %}
 
-exit
+# start config servers
+{% for server in config_members %}
+rm -rf {{mongo_db_base_path}}/{{server.replSetName}}/{{server.clusterRole}}_{{server.rs_id | default(0)}}
+mkdir -p {{mongo_db_base_path}}/{{server.replSetName}}/{{server.clusterRole}}_{{server.rs_id | default(0)}}
+echo "{{server.port}}"
+mongod --config {{mongo_config_base_path}}/mongo_{{server.replSetName}}_{{server.rs_id | default(0)}}_config.conf --fork
+{% endfor %}
+
 
 sleep 5
-# connect to one server and initiate the set
+echo connecting to the servers and initiate the replica-set
 
 {% for server in data_members %}
 {% if server.primary %}
 
 # {{server.replSetName}}
 
+echo "Initializing replset  {{server.replSetName}}"
+
 mongo --port {{server.port}} << 'EOF'
-config = { _id: "s0", members:[
+config = { _id: "{{server.replSetName}}", members:[
           {% for memberserver in data_members | selectattr("replSetName", "equalto", server.replSetName) %}
           {% if not loop.first %},{% endif %}{ _id : {{memberserver.rs_id}}, host : "{{memberserver.ip | default('127.0.0.1')}}:{{memberserver.port}}" }
           {% endfor %}
@@ -45,8 +56,10 @@ EOF
 {% endif %}
 {% endfor %}
 
+exit
 
 # start router servers
 {% for server in router_members %}
-mongod --config {{mongo_config_base_path}}/mongo_{{server.replSetName}}_{{server.rs_id | default(0)}}_router.conf
+echo "{{server.port}}"
+mongos --config {{mongo_config_base_path}}/mongo_{{server.replSetName}}_{{server.rs_id | default(0)}}_router.conf
 {% endfor %}

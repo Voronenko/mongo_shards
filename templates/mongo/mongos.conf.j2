@@ -1,11 +1,5 @@
 # mongod.conf
 
-net:
-   http:
-      enabled: true
-      JSONPEnabled: true
-      RESTInterfaceEnabled: true
-
 # for documentation of all options, see:
 #   http://docs.mongodb.org/manual/reference/configuration-options/
 
@@ -30,7 +24,9 @@ net:
   bindIp: [{{item.bindIp | default('0.0.0.0')}}, 127.0.0.1]
 
 
-#processManagement:
+processManagement:
+  pidFilePath: "{{mongo_log_base_path}}/{{item.clusterRole}}_{{item.replSetName}}_{{item.rs_id | default(0)}}.pid"
+  fork: true
 
 #security:
 
