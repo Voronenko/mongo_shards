@@ -57,12 +57,16 @@ EOF
 {% endif %}
 {% endfor %}
 
-exit
 
 # start router servers
 {% for item in router_members %}
 echo "{{item.port}}"
 mongos --port {{item.port}} --logpath "{{mongo_log_base_path}}/{{item.clusterRole}}_{{item.replSetName}}_{{item.rs_id | default(0)}}.log" --configdb {% for server in item.configDB %}{{server.ip | default(box_address)}}:{{server.port}}{% if not loop.last %},{% endif %}{% endfor %} --fork
+
+
+echo "Let's wait while the stuff will try to start working ...."
+
+sleep 15
 
 mongo --port {{item.port}} << 'EOF'
 {% for server in data_members %}

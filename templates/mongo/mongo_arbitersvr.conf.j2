@@ -13,10 +13,10 @@ net:
 storage:
   dbPath: {{mongo_db_base_path}}/{{item.replSetName}}/{{item.clusterRole}}_{{item.rs_id | default(0)}}
   journal:
-    enabled: true
+    enabled: false  # For arbiter only !!!
 #  engine:
   mmapv1:
-     smallFiles: true  # For DEMO purposes only, do not set on the production
+     smallFiles: true  # For arbiter only !!!
 #  wiredTiger:
 
 # where to write logging data.
