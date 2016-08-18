@@ -1,5 +1,5 @@
 Initial state:
-
+```
 MongoDB shell version: 3.2.9
 connecting to: 127.0.0.1:27018/test
 mongos> sh.status()
@@ -25,10 +25,10 @@ mongos> sh.status()
 		No recent migrations
   databases:
 	{  "_id" : "test",  "primary" : "alshard1",  "partitioned" : true }
-
+```
 
 Each shard consists of one primary in replica set.
-
+```
 mongo --port 37107
 
 alshard1:PRIMARY> rs.status()
@@ -60,7 +60,7 @@ alshard1:PRIMARY> rs.status()
 	"ok" : 1
 }
 alshard1:PRIMARY>
-
+```
 ==============================================
 
 Expanding  each shard to M-S-A replica set
@@ -78,19 +78,19 @@ Use rs.printReplicationInfo() to check the current state of replica set members 
 Strategy 1
 
 Note on shard name:
-
+```
 rm -rf db/alshard1/shardsvr_1
 mkdir -p db/alshard1/shardsvr_1
 mongod --replSet alshard1 --logpath "log/shardsvr_alshard1_1.log" --dbpath db/alshard1/shardsvr_1 --port 37108 --fork --shardsvr --smallfiles
-
+```
 connect to primary:  add newly added member
-
+```
 alshard1:PRIMARY> rs.add({_id:1, host:"192.168.0.21:37108", priority:0})
 { "ok" : 1 }
-
+```
 
 Check result:
-
+```
 alshard1:PRIMARY> rs.conf()
 {
 	"_id" : "alshard1",
@@ -124,20 +124,20 @@ alshard1:PRIMARY> rs.conf()
 			"votes" : 1
 		}
 	],
-
+```
 Checking operation status:  rs.status() , or in more details
-
+```
 alshard1:PRIMARY> use admin
 switched to db admin
 
 
 alshard1:PRIMARY> db.runCommand( { replSetGetStatus : 1 } )
-
+```
 
 pay attention to myState (log:  https://docs.mongodb.com/manual/reference/replica-states/)
 good values are 1,2,7
 
-
+```
 {
 	"set" : "alshard1",
 	"date" : ISODate("2016-08-18T19:00:28.831Z"),
@@ -183,7 +183,7 @@ good values are 1,2,7
 	"ok" : 1
 }
 alshard1:PRIMARY>
-
+```
 
 ===================================================
 
@@ -199,14 +199,15 @@ Never set storage.journal.enabled to false on a data-bearing node.
 For MMAPv1 storage engine, storage.mmapv1.smallFiles to true
 These settings are specific to arbiters. Do not set storage.journal.enabled to false on a data-bearing node. Similarly, do not set storage.mmapv1.smallFiles unless specifically indicated.
 
-
+```
 rm -rf db/alshard1/shardsvr_2
 mkdir -p db/alshard1/shardsvr_2
 mongod --replSet alshard1 --logpath "log/shardsvr_alshard1_2.log" --dbpath db/alshard1/shardsvr_2 --port 37109 --fork --shardsvr --smallfiles
-
+```
 
 
 Connect to the primary
+```
 alshard1:PRIMARY> rs.addArb("192.168.0.21:37109")
 { "ok" : 1 }
 
@@ -262,12 +263,13 @@ Status after update:
     "configVersion" : 3
   }
 ],
-
+```
 
 Checking the replication state:
 
-
+```
 alshard1:PRIMARY> rs.printSlaveReplicationInfo()
 source: 192.168.0.21:37108
 	syncedTo: Thu Aug 18 2016 22:13:41 GMT+0300 (EEST)
 	0 secs (0 hrs) behind the primary
+```
