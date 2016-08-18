@@ -3,6 +3,7 @@
 set -e
 
 echo "killing mongod and mongos"
+sudo service mongod stop || true
 killall mongod || true
 killall mongos || true
 
@@ -59,7 +60,16 @@ EOF
 exit
 
 # start router servers
-{% for server in router_members %}
-echo "{{server.port}}"
-mongos --config {{mongo_config_base_path}}/mongo_{{server.replSetName}}_{{server.rs_id | default(0)}}_router.conf
+{% for item in router_members %}
+echo "{{item.port}}"
+mongos --port {{item.port}} --logpath "{{mongo_log_base_path}}/{{item.clusterRole}}_{{item.replSetName}}_{{item.rs_id | default(0)}}.log" --configdb {% for server in item.configDB %}{{server.ip | default(box_address)}}:{{server.port}}{% if not loop.last %},{% endif %}{% endfor %} --fork
+
+mongo --port {{item.port}} << 'EOF'
+{% for server in data_members %}
+db.adminCommand( { addshard : "{{server.replSetName}}/"+"{{server.ip}}:{{server.port}}" } );
+{% endfor %}
+db.adminCommand({enableSharding: "test"});
+EOF
+
+# mongos --config {{mongo_config_base_path}}/mongo_{{item.replSetName}}_{{item.rs_id | default(0)}}_router.conf
 {% endfor %}

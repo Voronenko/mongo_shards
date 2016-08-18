@@ -2,13 +2,15 @@
   data_members:
     - {
         rs_id: 0,  # replicaset _id
+        ip: "{{box_address | default('127.0.0.1')}}",
         replSetName: "{{mongo_replset_base_name}}1",
         clusterRole: shardsvr,
-        port: 37107,  # 37<replSet#X><replSetMember#rs_id>7
+          port: 37107,  # 37<replSet#X><replSetMember#rs_id>7
         primary: yes
       }
     - {
         rs_id: 0,
+        ip: "{{box_address | default('127.0.0.1')}}",
         replSetName: "{{mongo_replset_base_name}}2",
         clusterRole: shardsvr,
         port: 37207,
@@ -16,6 +18,7 @@
       }
     - {
         rs_id: 0,
+        ip: "{{box_address | default('127.0.0.1')}}",
         replSetName: "{{mongo_replset_base_name}}3",
         clusterRole: shardsvr,
         port: 37307,
@@ -23,6 +26,7 @@
       }
     - {
         rs_id: 0,
+        ip: "{{box_address | default('127.0.0.1')}}",
         replSetName: "{{mongo_replset_base_name}}4",
         clusterRole: shardsvr,
         port: 37407,
@@ -40,18 +44,21 @@
   config_members:
     - {
         rs_id: 0,
+        ip: "{{box_address | default('127.0.0.1')}}",
         replSetName: "{{mongo_replset_base_name}}",
         clusterRole: configsvr,
         port: 47107  # 37<replSet#X><replSetMember#rs_id>7
       }
     - {
         rs_id: 1,
+        ip: "{{box_address | default('127.0.0.1')}}",
         replSetName: "{{mongo_replset_base_name}}",
         clusterRole: configsvr,
         port: 47207
       }
     - {
         rs_id: 2,
+        ip: "{{box_address | default('127.0.0.1')}}",
         replSetName: "{{mongo_replset_base_name}}",
         clusterRole: configsvr,
         port: 47307
